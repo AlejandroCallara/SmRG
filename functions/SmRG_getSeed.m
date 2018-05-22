@@ -1,19 +1,14 @@
 function [seed]=SmRG_getSeed(V)
 % SmRG_getSeed: 
 %           allows to select a seed by manually clicking on the image.
-% 
-%           1. This function is called when the user wants to select a
-%           slicE in the stack where to search for potential seeds.  
-%           2. otherwise it can be used just for visualization of a 3D
-%           stack.
 %
 % Syntax:
-%           Z = SmRG_scrollDataset(V)
+%           seed = SmRG_getSeed(V)
 %
 % Input:
 %           V: 3D grayscale/logic image
 % Output:
-%           Z: position of the slider
+%           seed: seed clicked by the user
 
 % get image size
 [nx,ny,nz]=size(V);
@@ -28,19 +23,32 @@ f = gcf;
 set(f, 'ToolBar', 'none');
 title('Select seed and press Enter')
 % set some axis properties
-a = axes; 
 axis([1 nx 1 ny]);
 
 % display dataset
-imagesc(a,V(:,:,1));
+imagesc(V(:,:,1));
 
 % set slider behaviour
-Sli = uicontrol('Style','slider','Min',minSli,'Max',maxSli,...
-                'SliderStep',[1 1]./(maxSli-minSli),'Value',1,...
-                'Position',[20 20 200 20]);
-set(Sli,'Callback',@(hObject,eventdata) imagesc(V(:,:,round(get(hObject,'Value'))),'Parent',a) )
+Sli = uicontrol('Parent',f,'Style','slider',...
+    'Min',minSli,'Max',maxSli,...
+    'SliderStep',[1 1]./(maxSli-minSli),...
+    'Value',1,'Position',[20 5 520 20],...
+    'Tag','Sli',...
+    'Callback',@Sli_callback);
+drawnow;
+
 % initialize seed with empty vector
 seed = [];
+
+
+% slider callback
+    function Sli_callback(hObject,eventdata,handles)
+        z = round(get(hObject,'Value'));
+        imagesc(V(:,:,z),'Parent',gca);
+        drawnow;
+    end
+
+set( findall( f, '-property', 'Units' ), 'Units', 'Normalized' )
 
 % iterate until a seed is selected
 while isempty(seed)
@@ -59,4 +67,4 @@ while isempty(seed)
         end
     end
 end
-
+end
