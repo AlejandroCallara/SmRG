@@ -118,8 +118,8 @@ switch str_mode
 end
 
 %% THRESHOLD CALCULATION AND REGION GROWING
-% prob_thresh= 0.99999999;
-prob_thresh= 0.9999;
+prob_thresh= 0.99999999;
+% prob_thresh= 0.9999;
 
 l = size(Jcell,1);
 if l==1
