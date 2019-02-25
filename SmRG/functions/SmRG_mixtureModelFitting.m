@@ -1,4 +1,4 @@
-function [p_tot,a1,K0_double,vB,mu_sk,rk] = SmRG_mixtureModelFitting(Vin)
+function [p_tot,a1,K0_double,vB,mu_sk,rk] = SmRG_mixtureModelFitting(Vin,background)
 % SmRG_mixtureModelFitting: 
 %           fits model described in [1] on data input Vin. The model 
 %           describes a single class k of signal pixels (negative-binomial)
@@ -31,12 +31,17 @@ function [p_tot,a1,K0_double,vB,mu_sk,rk] = SmRG_mixtureModelFitting(Vin)
 %
 %[1]: Calapez,A. and Rosa,A. (2010) A statistical pixel intensity model 
 %     for segmentation of confocal laser scanning microscopy images. 
-%     IEEE Trans. Image Process., 19, 2408–2418.
+%     IEEE Trans. Image Process., 19, 2408â€“2418.
 
 % check inputs
 if nargin<1
     help SmRG_mixtureModelFitting
     return
+end
+
+if nargin<2
+    % if background not specified never do check on background
+    background = 0;
 end
 
 if sum(Vin(:)<0)
@@ -53,12 +58,16 @@ p_tot=zeros(1,length(vin));
 V = uint16(Vd(:));
 
 % Gaussian initial condition
-K0 =2*(min(V)); % mean
-vB = 2*K0;    % variance
+% K0 =2*(min(V)); % mean
+K0_double =2*(min(Vd))+5; % mean
+
+% vB = 2*K0;    % variance
+vB_double = 2*K0_double;    % variance
+
 
 % Neg-Bin initial condition
 mu_sk = 2*mean(Vd); % mean
-v_sk = var(Vd);     % variance
+v_sk = 2*mu_sk; %var(Vd);     % variance
 
 rk = mu_sk^2/(v_sk-mu_sk);
 
@@ -91,24 +100,27 @@ while (abs(log_lik_a(count)-log_lik_a(count-1))>tol...
     for ii=1:n_of_pixel
         
         % cast
-        K0_double = double(K0); vB_double = double(vB);
+%         K0_double = double(K0); vB_double = double(vB);
         Vtmp = (Vd(ii));
         
         %  Gaussian log likelihood 
         psi_b_tmp = (-normlike([K0_double sqrt(vB_double)],Vtmp));
-            if isnan(psi_b_tmp);keyboard;end
-            %if (Vtmp-K0_double)<0;K0_double=double(min(V));end
-        psi_b(ii,1) = psi_b_tmp;
+        if isnan(psi_b_tmp);keyboard;end
         
-        %  Neg-Bin log likelihood 
+        %if (Vtmp-K0_double)<0;K0_double=double(min(V));end
+        psi_b(ii,1) = psi_b_tmp;
+            
+        
+        %  Neg-Bin log likelihood
         psi_a_tmp = (-nbinlike_mu([mu_sk 1/rk],(Vtmp)));
-            if isnan(psi_a_tmp);keyboard;end
+        if isnan(psi_a_tmp);keyboard;end
+        
         psi_a(ii,1) = psi_a_tmp;
         
         % log posterior
         b(ii,1) = ((psi_b_tmp)+log(pb))-log(exp(psi_b_tmp)*pb+exp(psi_a_tmp)*pa);
         a(ii,1) = ((psi_a_tmp)+log(pa))-log(exp(psi_b_tmp)*pb+exp(psi_a_tmp)*pa);
-        
+        end
     end
     b1 = exp(b);
     a1 = exp(a);
@@ -126,6 +138,10 @@ while (abs(log_lik_a(count)-log_lik_a(count-1))>tol...
     mu_sk = sum(a1.*(Vd))/sum(a1);
     v_sk = sum(a1.*(Vd-mu_sk).^2)/sum(a1);%   pk = mu_sk/v_sk;
     
+    % for numerical instability, to fix in future
+    if v_sk<mu_sk
+        v_sk = 2*mu_sk;
+    end
     rk = mu_sk^2/(v_sk-mu_sk);
     
     % today's posterior becomes tomorrow's prior :)
@@ -136,6 +152,11 @@ while (abs(log_lik_a(count)-log_lik_a(count-1))>tol...
     count= count+1;
     log_lik_a(count)=mean(psi_a);
     log_lik_b(count)=mean(psi_b);
+    
+    % prevent infinite loop
+    if count > 100
+        break
+    end
 end
 
 p_tot(i_ok) =a1;
