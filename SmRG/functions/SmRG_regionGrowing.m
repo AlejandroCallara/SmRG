@@ -1,30 +1,33 @@
-function [P, J] = SmRG_regionGrowing(cIM, initPos, tfFillHoles, tfSimplify,background,p_th)
-% SmRG_regionGrowing: 
+function [P, J] = SmRG_regionGrowing(cIM, initPos, tfFillHoles, tfSimplify,background,p_th,BoolDistSeed)
+% SmRG_regionGrowing:
 %           Region growing algorithm routine based on Daniel Kellner's
-%           code available at: 
+%           code available at:
 %
-% https://it.mathworks.com/matlabcentral/fileexchange/32532-region-growing--2d-3d-grayscale-?focused=5195969&tab=function 
+% https://it.mathworks.com/matlabcentral/fileexchange/32532-region-growing--2d-3d-grayscale-?focused=5195969&tab=function
 %
 % Syntax:
 %           [P, J]=SmRG_regionGrowing(cIM, initPos, tfFillHoles,...
 %                   tfSimplify,background,p_th)
 %
 % Inputs:
-%           cIM:            3D grayscale image 
-%           initPos:        3 element array with seeds coordinates    
+%           cIM:            3D grayscale image
+%           initPos:        3 element array with seeds coordinates
 %           tfFillHoles:    Fills enclosed holes in the binary mask  {true}
 %           tfSimplify:     Reduces the number of vertices {true, if dpsimplify exists}
 %           background:     max value of background
 %           p_th:           probability threshold for mixture model
+%           BoolDistSeed    if true computes new seeds from regional maxima
+%                           of distance trasform, otherwise all segmented
+%                           pixels are used as new seeds
 %
 % Outputs:
 %           P:  VxN array (with V number of vertices, N number of dimensions)
-%               P is the enclosing polygon for all associated pixel/voxel 
+%               P is the enclosing polygon for all associated pixel/voxel
 %           J:  Binary mask (with the same size as the input image) indicating
 %               1 (true) for associated pixel/voxel and 0 (false) for outside
 %
 
-%% check inputs 
+%% check inputs
 
 if nargin<1
     help SmRG_regionGrowing
@@ -32,7 +35,7 @@ if nargin<1
 end
 
 % too many inputs?
-if nargin > 6
+if nargin > 7
     error('Wrong number of input arguments!')
 end
 
@@ -49,7 +52,7 @@ end
 
 % check for fill holes
 if ~exist('tfFillHoles', 'var')
-    tfFillHoles = true;
+    tfFillHoles = false;
 end
 
 % check image dims
@@ -82,6 +85,11 @@ if ~exist('p_th','var')
     p_th = 1;
 end
 
+% check for BoolDistSeed
+if ~exist('BoolDistSeed', 'var')
+    BoolDistSeed = true;
+end
+
 % text output with initial parameters
 disp(['RegionGrowing Opening: Initial position (' num2str(initPos(1))...
     '|' num2str(initPos(2)) '|' num2str(initPos(3)) ')'])
@@ -92,15 +100,30 @@ cIMtmp=zeros(nRow,nCol,nSli);
 
 % REGION GROWING ALGORITHM
 %% CROP
-% crop size is 64x64x3 by default. It can be changed by changing the
+% crop size is N/8xN/8x3 by default. It can be changed by changing the
 % crop_delta variable. the crop_delta variable acts on the plane crop size
 % by adding and subtracting its value from the seed.
-% 
-% i.e: 
+%
+% i.e:
 %       xseed-crop_delta:xseed+crop_delta-1
 %       yseed-crop_delta:yseed+crop_delta-1
 %       zseed-1:zseed+1
-crop_delta=32;
+
+% get dimension
+crop_delta_row=round(nRow/16,0);
+crop_delta_col=round(nCol/16,0);
+
+% set square crop
+crop = [crop_delta_row,crop_delta_col];
+[crop_min,i_crop_min]=min(crop);
+
+crop_delta=crop(i_crop_min);
+
+% if to few points force crop to minimum allowed value crop_delta = 32
+if crop_delta <32
+    crop_delta = 32;
+end
+
 
 xv=initPos(1);yv=initPos(2);zv=initPos(3);
 bool_x=false; bool_y=false; bool_z=false;
@@ -160,7 +183,7 @@ Vdip= Vx3(:,:,2);
 % "spike" on the right tail of the histogram
 for ii=1:length(row)
     Vdip(row(ii),col(ii))=0/0;
-end 
+end
 Ne = sort(Vdip(:));
 Ne = Ne(~ismissing(Ne));
 
@@ -173,7 +196,7 @@ p    = round(sum(dip<boot_dip)/nboot,4);
 binV = false(size(Vx3));
 
 % if bimodal OTSU
-if p < 0.01 
+if p < 0.01
     if max(Vx3(:))<background
         disp('Only background -> skipping segmentation'), disp('');
         
@@ -190,20 +213,20 @@ if p < 0.01
         end
         cIMtmp(xinit:xend,yinit:yend,zinit:zend)=binV.*Vx3;
     end
-% else EM
+    % else EM
 else
     disp('the distribution was found to be unimodal -> segmenting with mixture model fitting'), disp('');
     
     % get central slice of crop
     V_central_slice= Vx3(:,:,2);
-    vec_cs = V_central_slice(:); 
+    vec_cs = V_central_slice(:);
     
     % fit model
-    [p_tot,a] = SmRG_mixtureModelFitting(V_central_slice);
+    [p_tot,a] = SmRG_mixtureModelFitting(V_central_slice,background);
     
     % get indices that satisfy condition
     i_signal = (1-p_tot)<=(1-p_th);
-  
+    
     % find indices in image
     tmp = vec_cs(i_signal);
     tmp(tmp==0)=max(tmp);
@@ -211,7 +234,7 @@ else
     mask= Vx3>MIN;
     V_signal=mask.*double(mask);
     
-    % set values in crop 
+    % set values in crop
     cIMtmp(xinit:xend,yinit:yend,zinit:zend)= V_signal;
     
 end
@@ -262,37 +285,40 @@ while size(seed,1)
     seed_fatti(end+1,:)   = seed(1,:);
     seed(1,:)    = [];
     
-    % find J-slices with at least one 1 
-    s = zeros(1,nSli);
-    for iJ=1:nSli;
-        s(iJ)=sum(sum(J(:,:,iJ)));
-    end
+    % find J-slices with at least one 1
+    s = sum(sum(J));
+    s = s(:);
+    
     sfind = find(s);
-    MIN = min(sfind);
-    MAX = max(sfind);
-
+    MINi = min(sfind);
+    MAXi = max(sfind);
+    
     
     % search for new seeds
-    SEMI= [];
-    iz  = [];
-    for d3 = MIN:MAX
-        
-        % compute distance transform
-        Jdist = round(bwdist(~J(:,:,d3)),0);
-        
-        % get regional maxima
-        Jtmp  = imregionalmax(Jdist,4);
-        
-        % get new seeds as centroids of regional maxima
-        sz      = regionprops(Jtmp);
-        for i_sz = 1:length(sz)
-            tmp_iz = [flip(round(sz(i_sz).Centroid)) d3];
-            iz = [iz;tmp_iz];
+    if ~BoolDistSeed
+        [uot1 uot2 uot3]=ind2sub(size(J),find(J));
+        SEMI= [uot1 uot2 uot3];
+    else
+        SEMI = [];
+        iz  = [];
+        for d3 = MINi:MAXi
+            
+            % compute distance transform
+            Jdist = round(bwdist(~J(:,:,d3)),0);
+            
+            % get regional maxima
+            Jtmp  = imregionalmax(Jdist,4);
+            
+            % get new seeds as centroids of regional maxima
+            sz      = regionprops(Jtmp);
+            for i_sz = 1:length(sz)
+                tmp_iz = [flip(round(sz(i_sz).Centroid)) d3];
+                iz = [iz;tmp_iz];
+            end
+            SEMI  = cat(1,SEMI,iz);
+            iz = [];
         end
-        SEMI  = cat(1,SEMI,iz);
-        iz = [];
     end
-
     seed = [seed;SEMI];
     matched_seeds = ismember(seed,seed_fatti,'rows');
     
@@ -362,9 +388,9 @@ while size(seed,1)
     % dip statistic of current crop
     dip  = HartigansDipTest(Ne);
     p    = round(sum(dip<boot_dip)/nboot,4);
-
+    
     %% check on bimodality
-    if p ==0 
+    if p ==0
         if max(Vx3(:))<background
             disp('Only background -> skipping segmentation'), disp('');
             
@@ -384,7 +410,7 @@ while size(seed,1)
             Vplot_bin = or(binV,cIMtmp(xinit:xend,yinit:yend,zinit:zend)>0);
             cIMtmp(xinit:xend,yinit:yend,zinit:zend)=Vplot_bin.*Vx3;
         end
-    % else EM
+        % else EM
     else
         disp('the distribution was found to be unimodal -> segmenting with mixture model fitting'), disp('');
         
@@ -394,7 +420,7 @@ while size(seed,1)
         binV = zeros(size(V_central_slice));
         
         % fit model
-        [p_tot,a] = SmRG_mixtureModelFitting(V_central_slice);
+        [p_tot,a] = SmRG_mixtureModelFitting(V_central_slice,background);
         
         % get indices that satisfies condition
         i_signal = (1-p_tot)<=(1-p_th);
@@ -403,10 +429,13 @@ while size(seed,1)
         tmp = vec_cs(i_signal);
         tmp(tmp==0)=max(tmp);
         MIN = min(tmp);
-        mask= Vx3>MIN;
-        
-        % do not remove what already segmented 
-        mask=or(mask,cIMtmp(xinit:xend,yinit:yend,zinit:zend)>0);
+        if isempty(MIN)
+            mask = false(size(Vx3))
+        else
+            mask= Vx3>MIN;
+            % do not remove what already segmented
+            mask=or(mask,cIMtmp(xinit:xend,yinit:yend,zinit:zend)>0);
+        end
         V_signal=double(mask).*Vx3;
         
         % set values in segmenting crop
