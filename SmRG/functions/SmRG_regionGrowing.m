@@ -26,7 +26,6 @@ function [P, J] = SmRG_regionGrowing(cIM, initPos, tfFillHoles, tfSimplify,backg
 %           J:  Binary mask (with the same size as the input image) indicating
 %               1 (true) for associated pixel/voxel and 0 (false) for outside
 %
-
 %% check inputs
 
 if nargin<1
