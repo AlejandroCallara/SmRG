@@ -26,6 +26,7 @@ clc
 tic
 % import data and keep memory of file name and file path
 [V, name_im, path_im] = SmRG_importData;
+V = medfilt3(V);
 
 % get size of data
 [nx,ny,nz]=size(V);
@@ -118,9 +119,9 @@ switch str_mode
 end
 
 %% THRESHOLD CALCULATION AND REGION GROWING
-prob_thresh= 0.99999999;
-% prob_thresh= 0.9999;
-
+prob_thresh= 1%0.99999999;    % for testing with PCs
+% prob_thresh= 0.5;           % for testing with OP fibers
+BoolDistSeed = false;
 l = size(Jcell,1);
 if l==1
     xseed = round(seed (1,2));
@@ -128,11 +129,11 @@ if l==1
     zseed = round(seed (1,3));
     
     % get background
-    background = SmRG_getBackground(V(:,:,zseed));
+    background = SmRG_getBackground(V(:,:,zseed),'otsu');
     
     % region growing
     [P, J] = SmRG_regionGrowing(V, [xseed,yseed,zseed],1,1,...
-        background,prob_thresh);
+        background,prob_thresh,BoolDistSeed);
     Jcell{1,1} = J;
     Jcell{1,2} = P;
     % text output with final number of vertices
