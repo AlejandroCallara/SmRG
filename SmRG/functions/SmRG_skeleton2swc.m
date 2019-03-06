@@ -28,7 +28,7 @@ end
 if nargin > 2
     error('Wrong number of input arguments!')
 end
-if ~exist('cIM', 'var')
+if ~exist('Jskel', 'var')
     return
 end
 if ~exist('initPos', 'var') || isempty(initPos)
