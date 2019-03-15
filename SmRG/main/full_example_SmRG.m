@@ -121,7 +121,7 @@ end
 %% THRESHOLD CALCULATION AND REGION GROWING
 prob_thresh= 1%0.99999999;    % for testing with PCs
 % prob_thresh= 0.5;           % for testing with OP fibers
-BoolDistSeed = false;
+BoolDistSeed = true;
 l = size(Jcell,1);
 if l==1
     xseed = round(seed (1,2));
