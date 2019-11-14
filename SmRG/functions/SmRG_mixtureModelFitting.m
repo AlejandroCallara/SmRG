@@ -120,7 +120,6 @@ while (abs(log_lik_a(count)-log_lik_a(count-1))>tol...
         % log posterior
         b(ii,1) = ((psi_b_tmp)+log(pb))-log(exp(psi_b_tmp)*pb+exp(psi_a_tmp)*pa);
         a(ii,1) = ((psi_a_tmp)+log(pa))-log(exp(psi_b_tmp)*pb+exp(psi_a_tmp)*pa);
-        end
     end
     b1 = exp(b);
     a1 = exp(a);
