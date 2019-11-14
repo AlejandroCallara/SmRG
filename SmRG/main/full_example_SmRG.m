@@ -147,7 +147,7 @@ elseif l>1
 
     switch str_in
         case 'y'
-            for abc = 1:3;
+            for abc = 1:U;
                 
                 xseed = round(cent (abc,2));
                 yseed = round(cent (abc,1));
