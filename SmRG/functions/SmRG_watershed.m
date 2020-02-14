@@ -3,7 +3,7 @@ function [Jwat] = SmRG_watershed(J)
 %           applies watershed on 3D binary image.
 % 
 % Syntax:
-%           [outs] = SmRG_watershed(J)
+%           [Jwat] = SmRG_watershed(J)
 %
 % Input:
 %           J: 3D binary image

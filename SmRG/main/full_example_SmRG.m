@@ -1,4 +1,4 @@
-% test example of SmRG that calls almost all functions contained in the
+    % test example of SmRG that calls almost all functions contained in the
 % SmRG package available at: 
 % 
 % When running this script a window will pop up asking for a .tiff stack file. 
@@ -19,14 +19,14 @@
 % for spherical objects within the dataset (potentially cell soma). For
 % each sphere a seed is chosen as the center of the sphere. 
 
-clear
-close all
-clc
-%% DATASET IMPORT
-tic
-% import data and keep memory of file name and file path
-[V, name_im, path_im] = SmRG_importData;
-V = medfilt3(V);
+% clear
+% close all
+% clc
+% % DATASET IMPORT
+% tic
+% % import data and keep memory of file name and file path
+% [V, name_im, path_im] = SmRG_importData;
+% V = medfilt3(V);
 
 % get size of data
 [nx,ny,nz]=size(V);
@@ -79,7 +79,7 @@ switch str_mode
         imagesc(Iseed);
         viscircles(c, r,'EdgeColor','r');
         disp('seed detection finished');
-        
+        cent = c;
     case 'automatic'
 
         fprintf...
@@ -119,8 +119,8 @@ switch str_mode
 end
 
 %% THRESHOLD CALCULATION AND REGION GROWING
-prob_thresh= 1%0.99999999;    % for testing with PCs
-% prob_thresh= 0.5;           % for testing with OP fibers
+prob_thresh= 100;             % for testing with PCs
+% prob_thresh= 50;           % for testing with OP fibers
 BoolDistSeed = true;
 l = size(Jcell,1);
 if l==1
@@ -132,8 +132,10 @@ if l==1
     background = SmRG_getBackground(V(:,:,zseed),'otsu');
     
     % region growing
+    tic
     [P, J] = SmRG_regionGrowing(V, [xseed,yseed,zseed],1,1,...
         background,prob_thresh,BoolDistSeed);
+    elapsedTime = toc
     Jcell{1,1} = J;
     Jcell{1,2} = P;
     % text output with final number of vertices

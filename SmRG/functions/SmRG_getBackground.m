@@ -36,7 +36,8 @@ if strcmp(method,'otsu')
     
     % isolate background
     Vb = Vin.*(~Vbin);
-    background = round(sum(Vb(:))/sum(~Vbin(:)));
+    [Vnotnan,i_nan,i_ok]=SmRG_workWithNans(Vb);
+    background = round(sum(Vb(:),'omitnan')/length(find(Vnotnan)));
     
 elseif strcmp(method,'mm')
      

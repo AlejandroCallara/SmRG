@@ -1,4 +1,4 @@
-function SmRG_writeData(V,tipo)
+function SmRG_writeData(V,tipo,filename,pathname)
 % SmRG_writeData: 
 %           write 3D dataset to .tiff stack file.
 %           Future updates will consider other formats. 
@@ -25,7 +25,6 @@ if nargin <3
         tipo = 'uint8';
     end
 end
-
 % image size
 [nx,ny,nz]=size(V);
 
@@ -36,10 +35,15 @@ if ~exist('tipo')
 end
 
 % export data
-[filename,pathname]=uiputfile({'*.tif'});
-str_out=strcat(pathname,filename);
-fprintf('saving .tiff stack to \n')
-disp(str_out)
+if nargin <4
+    [filename,pathname]=uiputfile({'*.tif'});
+    str_out=strcat(pathname,filename);
+    fprintf('saving .tiff stack to \n')
+    disp(str_out)
+else 
+    str_out=strcat(pathname,filename);
+end
+
 
 
 classe = class(V);
@@ -48,7 +52,7 @@ if ~strcmp(classe,'double')
     V = double(V);
 end
 vtmp = (V-min(V(:)))/(max(V(:))-min(V(:)));
-
+vtmp = single(vtmp);
 c = strsplit(tipo,'uint');
 switch tipo
     case 'uint8'

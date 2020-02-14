@@ -1,4 +1,4 @@
-function SmRG_vis3D(J,tree)
+function SmRG_vis3D(J,tree,alfa)
 % SmRG_vis3D: 
 %           3D plot of binary 3D dataset (ideally the output of SmRG_regionGrowing)
 %           with optional swc superimposed. 
@@ -43,7 +43,7 @@ end
 [p,v] = isosurface(J, 0.5);
 
 patch('Faces',p, 'Vertices',v,'FaceColor','green',...
-      'EdgeColor','none','FaceAlpha',0.25);
+      'EdgeColor','none','FaceAlpha',0.5);
 axis equal;
 
 camlight; 
