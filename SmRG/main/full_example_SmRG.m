@@ -19,13 +19,13 @@
 % for spherical objects within the dataset (potentially cell soma). For
 % each sphere a seed is chosen as the center of the sphere. 
 
-% clear
-% close all
-% clc
+clear
+close all
+clc
 % % DATASET IMPORT
-% tic
+tic
 % % import data and keep memory of file name and file path
-% [V, name_im, path_im] = SmRG_importData;
+[V, name_im, path_im] = SmRG_importData;
 % V = medfilt3(V);
 
 % get size of data
