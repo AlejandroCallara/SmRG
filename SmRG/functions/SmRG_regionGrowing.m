@@ -37,7 +37,7 @@ if nargin<1
 end
 
 % too many inputs?
-if nargin > 7
+if nargin > 8
     error('Wrong number of input arguments!')
 end
 
