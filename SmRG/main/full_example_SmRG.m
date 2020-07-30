@@ -1,4 +1,4 @@
-    % test example of SmRG that calls almost all functions contained in the
+% test example of SmRG that calls almost all functions contained in the
 % SmRG package available at: 
 % 
 % When running this script a window will pop up asking for a .tiff stack file. 
@@ -122,6 +122,8 @@ end
 prob_thresh= 100;             % for testing with PCs
 % prob_thresh= 50;           % for testing with OP fibers
 BoolDistSeed = true;
+
+use_mex = true;
 l = size(Jcell,1);
 if l==1
     xseed = round(seed (1,2));
@@ -134,7 +136,7 @@ if l==1
     % region growing
     tic
     [P, J] = SmRG_regionGrowing(V, [xseed,yseed,zseed],1,1,...
-        background,prob_thresh,BoolDistSeed);
+        background,prob_thresh,BoolDistSeed,use_mex);
     elapsedTime = toc
     Jcell{1,1} = J;
     Jcell{1,2} = P;
@@ -163,7 +165,7 @@ elseif l>1
                 
                 % region growing
                 [P, J] = SmRG_regionGrowing(V, [xseed,yseed,zseed],1,1,...
-                    background,prob_thresh);
+                    background,prob_thresh,BoolDistSeed,use_mex);
                 Jcell{abc,1} = J;
                 Jcell{abc,2} = P;
             end
