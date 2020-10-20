@@ -68,7 +68,7 @@ Vx3 = V(xinit:xend,yinit:yend,zinit:zend);
 %%
 V_central_slice = Vx3(:,:,2);
 vec_cs = V_central_slice(:);
-[p_tot,a,K0_double,vB_double,mu_sk,rk] = SmRG_mixtureModelFitting_multmix(vec_cs');
+[p_tot,a,K0_double,vB_double,mu_sk,rk] = SmRG_mixtureModelFitting_multmix_mex(vec_cs',20,40,[50 80 120 160],[10 10 10 10]);
 
 
 figure, histogram(V_central_slice)
