@@ -20,7 +20,7 @@ end
 boot_dip =[];
 
 for iboot=1:nboot
-    unifpdfboot=sort(unifrnd(0,1,1,64*64));
+    unifpdfboot=sort(unifrnd(0,1,1,255));
     [unif_dip]=HartigansDipTest(unifpdfboot);
     boot_dip=[boot_dip; unif_dip];
 end
