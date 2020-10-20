@@ -20,7 +20,7 @@ function [P, J] = SmRG_regionGrowing(cIM, initPos, tfFillHoles, tfSimplify,backg
 %                           of distance trasform, otherwise all segmented
 %                           pixels are used as new seeds
 %           use_mex         if true attemps at using mex version of
-%                          SmRG_mixtureModel. At the moment the code is
+%                           SmRG_mixtureModel. At the moment the code is
 %                           given only with mexw64.
 %
 % Outputs:
@@ -37,7 +37,7 @@ if nargin<1
 end
 
 % too many inputs?
-if nargin > 8
+if nargin >8
     error('Wrong number of input arguments!')
 end
 
@@ -139,6 +139,7 @@ end
 
 
 xv=initPos(1);yv=initPos(2);zv=initPos(3);
+queue = [xv, yv, zv];
 bool_x=false; bool_y=false; bool_z=false;
 xinit = xv-crop_delta; if xinit<=1; xinit=1; bool_x=true;end
 yinit = yv-crop_delta; if yinit<=1; yinit=1; bool_y=true;end
@@ -179,7 +180,7 @@ if zinit<round(nSli/2)
 else
     ordine='descend';
 end
-
+v_init = [xinit yinit zinit];
 %% Hartigan's dip statistic
 % create null for Hartigans' dip test: boot_dip will
 % be used intensively during the region growing procedure
@@ -209,7 +210,7 @@ p    = round(sum(dip<boot_dip)/nboot,4);
 mask = false(size(Vx3));
 
 % if bimodal OTSU
-if p < 0.01
+if p<=0.05
     if max(Vx3(:))<background
         disp('Only background -> skipping segmentation'), disp('');
         
@@ -224,6 +225,9 @@ if p < 0.01
             sss= graythresh(im_tmp(:,:,dc));
             mask(:,:,dc)=im2bw(im_tmp(:,:,dc),sss);
         end
+        mask = SmRG_pruneMask(mask, queue,v_init);
+        mask = or(mask,cIMtmp(xinit:xend,yinit:yend,zinit:zend)>0);
+        
         cIMtmp(xinit:xend,yinit:yend,zinit:zend)=mask.*Vx3;
     end
     % else EM
@@ -231,7 +235,7 @@ else
     disp('the distribution was found to be unimodal -> segmenting with mixture model fitting'), disp('');
     
     % get central slice of crop
-    V_central_slice= Vx3(:,:,2); 
+    V_central_slice= Vx3(:,:,2);
     vec_cs = V_central_slice(:);
     
     %set initial values for model fitting: gaussian
@@ -243,23 +247,49 @@ else
     v_sk = 2*mu_sk; % variance
     rk = mu_sk^2/(v_sk-mu_sk);
     
-
+    
     
     % fit model
     if use_mex
-        [p_tot,a,K0_double,vB_double,mu_sk,rk] = SmRG_mixtureModelFitting_mex(V_central_slice,...
+        [p_tot,a,K0_double,vB_double,mu_sk,rk] = SmRG_mixtureModelFitting_newPost_mex(V_central_slice,...
             K0_double,vB_double,mu_sk,rk);
     else
-        [p_tot,a,K0_double,vB_double,mu_sk,rk] = SmRG_mixtureModelFitting_mex(V_central_slice,...
+        [p_tot,a,K0_double,vB_double,mu_sk,rk] = SmRG_mixtureModelFitting_newPost(V_central_slice,...
             K0_double,vB_double,mu_sk,rk);
     end
     
     % get threshold
-    p_th_dist = prctile(p_tot,p_th);
+    d = 0;
+    p_th = 100;
+    count = 0;
+    p_tot(p_tot>1)=1;
+    n_soglie = 2;
+    trovate_2 = true;
+    count_soglie = 0;
+    while trovate_2
+        p_th_dist = prctile(p_tot,p_th);
+        d = 1- p_th_dist;
+        count = count+1;
+        if d~=0
+            count_soglie = count_soglie+1;
+            soglie(count_soglie)=p_th;
+            p_dist_soglie(count_soglie)=p_th_dist;
+            n_soglie = n_soglie-1;
+        end
+        if n_soglie == 0
+            trovate_2 = false;
+        end
+        p_th = p_th-1;
+    end
+    p_th_dist = p_dist_soglie(1);
+    % p_th_dist = 1;
+    
+    % old way to get threshold: still good
+    % p_th_dist = prctile(p_tot,p_th);
     
     % get indices that satisfies condition
     i_signal = (1-p_tot)<=(1-p_th_dist);
-
+    
     % find indices in image
     tmp = vec_cs(i_signal);
     tmp(tmp==0)=max(tmp);
@@ -269,7 +299,9 @@ else
     else
         mask= Vx3>MIN;
         % do not remove what already segmented
+        mask = SmRG_pruneMask(mask, queue,v_init);
         mask=or(mask,cIMtmp(xinit:xend,yinit:yend,zinit:zend)>0);
+        
     end
     V_signal=double(mask).*Vx3;
     
@@ -323,15 +355,15 @@ while size(seed,1)
     seed_fatti(end+1,:)   = seed(1,:);
     seed(1,:)    = [];
     
-    ccmask = bwconncomp(mask);
-    for icc=1:length(ccmask.PixelIdxList)
-        [cc1, cc2, cc3]=(ind2sub(size(mask),ccmask.PixelIdxList{1,icc}));
-        SEMIcc= [cc1+xinit-1 cc2+yinit-1 cc3+zinit-1];
-        if sum(ismember(SEMIcc,seed_fatti(end,:),'rows'))
-            mask = false(size(mask));
-            mask(ccmask.PixelIdxList{1,icc})=true;
-        end
-    end
+    %     ccmask = bwconncomp(mask);
+    %     for icc=1:length(ccmask.PixelIdxList)
+    %         [cc1, cc2, cc3]=(ind2sub(size(mask),ccmask.PixelIdxList{1,icc}));
+    %         SEMIcc= [cc1+xinit-1 cc2+yinit-1 cc3+zinit-1];
+    %         if sum(ismember(SEMIcc,seed_fatti(end,:),'rows'))
+    %             mask = false(size(mask));
+    %             mask(ccmask.PixelIdxList{1,icc})=true;
+    %         end
+    %     end
     % find mask-slices with at least one 1
     s = sum(sum(mask));
     s = s(:);
@@ -339,7 +371,6 @@ while size(seed,1)
     sfind = find(s);
     MINi = min(sfind);
     MAXi = max(sfind);
-    
     
     % search for new seeds
     if ~BoolDistSeed
@@ -354,7 +385,7 @@ while size(seed,1)
             Jdist = round(bwdist(~mask(:,:,d3)),0);
             
             % get regional maxima
-            Jtmp  = imregionalmax(Jdist,4);
+            Jtmp  = imregionalmax(Jdist,8);
             
             % get new seeds as centroids of regional maxima
             sz      = regionprops(Jtmp);
@@ -364,10 +395,10 @@ while size(seed,1)
             end
             
             % add boundaries
-            %             Jbound = bwperim(J(:,:,d3));
-            %             [boundx,boundy,boundz]=ind2sub(size(Jbound),find(Jbound));
-            %             SEMIbound= [boundx,boundy,ones(length(boundx),1)*d3];
-            %             SEMI  = cat(1,SEMI,iz,SEMIbound);
+            % Jbound = bwperim(J(:,:,d3));
+            % [boundx,boundy,boundz]=ind2sub(size(Jbound),find(Jbound));
+            % SEMIbound= [boundx,boundy,ones(length(boundx),1)*d3];
+            % SEMI  = cat(1,SEMI,iz,SEMIbound);
             SEMI  = cat(1,SEMI,iz);
             
             iz = [];
@@ -384,8 +415,9 @@ while size(seed,1)
     seed(matched_seeds,:)=[];
     seed=unique(seed,'rows');
     
-    [~,sort_ind]=sort(seed(:,3),ordine);
-    seed=seed(sort_ind,:);
+    % sort seeds...maybe not so useful
+    % [~,sort_ind]=sort(seed(:,3),ordine);
+    % seed=seed(sort_ind,:);
     
     clear solo_x solo_y solo_z
     size(seed)
@@ -428,6 +460,7 @@ while size(seed,1)
         zend = nSli;
         zinit=zend-2;
     end
+    v_init = [xinit yinit zinit];
     %% Hartigan's dip statistic
     % null already created
     Vx3 = cIM(xinit:xend,yinit:yend,zinit:zend);
@@ -449,7 +482,7 @@ while size(seed,1)
     p    = round(sum(dip<boot_dip)/nboot,4);
     
     %% check on bimodality
-    if p<0.01
+    if p<=0.05
         if max(Vx3(:))<background
             disp('Only background -> skipping segmentation'), disp('');
             
@@ -466,7 +499,10 @@ while size(seed,1)
                 mask(:,:,dc)=im2bw(im_tmp(:,:,dc),sss);
             end
             %cIMtmp(xinit:xend,yinit:yend,zinit:zend)=binV.*Vx3;
+            
+            mask = SmRG_pruneMask(mask,  queue,v_init);
             mask = or(mask,cIMtmp(xinit:xend,yinit:yend,zinit:zend)>0);
+            
             cIMtmp(xinit:xend,yinit:yend,zinit:zend)=mask.*Vx3;
         end
         % else EM
@@ -474,49 +510,48 @@ while size(seed,1)
         disp('the distribution was found to be unimodal -> segmenting with mixture model fitting'), disp('');
         
         % get central slice of crop
-        V_central_slice= Vx3(:,:,2);        
+        V_central_slice= Vx3(:,:,2);
         vec_cs = V_central_slice(:);
         
         % reset mask
-        mask = zeros(size(V_central_slice));
+        % mask = zeros(size(V_central_slice));
         %
-        %         % test hist distances
-        %         threshold = 10^-2;
-        %         if exist('stored_init_cond')
-        %             proposed = zeros(1,4);
-        %         else
-        %             stored_init_cond = [];
-        %             proposed = [];%zeros(1,4);
-        %             sample_values = [];
-        %         end
-        %
-        %         actual_values = vec_cs;
-        %
-        %         [sample_values,found,stored_init_cond,proposed]=...
+        % %%% test hist distances added by Nicola Vanello.
+        % threshold = 10^-2;
+        % if exist('stored_init_cond')
+        %   proposed = zeros(1,4);
+        % else
+        %   stored_init_cond = [];
+        %   proposed = [];%zeros(1,4);
+        %   sample_values = [];
+        % end
+        % actual_values = vec_cs;
+        % [sample_values,found,stored_init_cond,proposed]=...
         %                 SmRG_findCloser(actual_values,sample_values,stored_init_cond,...
         %                 proposed,threshold);
         %
         %
         %
-        %         % fit model
-        %         if found
-        %             K0_double   = proposed(1);
-        %             vB          = proposed(2);
-        %             mu_sk       = proposed(3);
-        %             rk          = proposed(4);
-        %             [p_tot,a,K0_double,vB,mu_sk,rk] = SmRG_mixtureModelFitting(V_central_slice,K0_double,vB,mu_sk,rk);
-        %         else
-        %             [p_tot,a,K0_double,vB,mu_sk,rk] = SmRG_mixtureModelFitting(V_central_slice);
-        %             sample_values = [sample_values;vec_cs'];
-        %             stored_init_cond = [stored_init_cond;[K0_double,vB,mu_sk,rk]];
-        %         end
+        % %%%fit model added by Nicola Vanello: evaluates the distance between
+        % histograms to use optimal priors. Actually not used.
+        % if found
+        %    K0_double   = proposed(1);
+        %    vB          = proposed(2);
+        %    mu_sk       = proposed(3);
+        %    rk          = proposed(4);
+        %    [p_tot,a,K0_double,vB,mu_sk,rk] = SmRG_mixtureModelFitting(V_central_slice,K0_double,vB,mu_sk,rk);
+        % else
+        %    [p_tot,a,K0_double,vB,mu_sk,rk] = SmRG_mixtureModelFitting(V_central_slice);
+        %    sample_values = [sample_values;vec_cs'];
+        %    stored_init_cond = [stored_init_cond;[K0_double,vB,mu_sk,rk]];
+        % end
         
         % fit model
         if exist('K0_double')
-            if use_mex 
-                [p_tot,a,K0_double,vB_double,mu_sk,rk] = SmRG_mixtureModelFitting_mex(V_central_slice,K0_double,vB_double,mu_sk,rk);
+            if use_mex
+                [p_tot,a,K0_double,vB_double,mu_sk,rk] = SmRG_mixtureModelFitting_newPost_mex(V_central_slice,K0_double,vB_double,mu_sk,rk);
             else
-                [p_tot,a,K0_double,vB_double,mu_sk,rk] = SmRG_mixtureModelFitting(V_central_slice,K0_double,vB_double,mu_sk,rk);
+                [p_tot,a,K0_double,vB_double,mu_sk,rk] = SmRG_mixtureModelFitting_newPost(V_central_slice,K0_double,vB_double,mu_sk,rk);
             end
         else
             %set initial values for model fitting: gaussian
@@ -528,14 +563,49 @@ while size(seed,1)
             v_sk = 2*mu_sk; % variance
             rk = mu_sk^2/(v_sk-mu_sk);
             if use_mex
-                [p_tot,a,K0_double,vB_double,mu_sk,rk] = SmRG_mixtureModelFitting_mex(V_central_slice,K0_double,vB_double,mu_sk,rk);
+                [p_tot,a,K0_double,vB_double,mu_sk,rk] = SmRG_mixtureModelFitting_newPost_mex(V_central_slice,K0_double,vB_double,mu_sk,rk);
             else
-                [p_tot,a,K0_double,vB_double,mu_sk,rk] = SmRG_mixtureModelFitting(V_central_slice,K0_double,vB_double,mu_sk,rk);
+                [p_tot,a,K0_double,vB_double,mu_sk,rk] = SmRG_mixtureModelFitting_newPost(V_central_slice,K0_double,vB_double,mu_sk,rk);
             end
         end
         
+        % %useful in debug mode: plot the model fitting on data hist
+        %figure(1), histogram(V_central_slice)
+        %hold on
+        %plot(50000*normpdf(1:max(V_central_slice(:)),K0_double,sqrt(vB_double)))
+        %plot(100000*nbinpdf_mu(1:max(V_central_slice(:)),mu_sk,1/rk))
+        %drawnow
+        %hold off
+        
         % set threshold
-        p_th_dist = prctile(p_tot,p_th);
+        % get threshold
+        d = 0;
+        p_th = 100;
+        count = 0;
+        p_tot(p_tot>1)=1;
+        n_soglie = 2;
+        trovate_2 = true;
+        count_soglie = 0;
+        while trovate_2
+            p_th_dist = prctile(p_tot,p_th);
+            d = 1- p_th_dist;
+            count = count+1;
+            if d~=0
+                count_soglie = count_soglie+1;
+                soglie(count_soglie)=p_th;
+                p_dist_soglie(count_soglie)=p_th_dist;
+                n_soglie = n_soglie-1;
+            end
+            if n_soglie == 0
+                trovate_2 = false;
+            end
+            p_th = p_th-0.5;
+        end
+        p_th_dist = p_dist_soglie(1);
+        %  p_th_dist = 1;
+        
+        % old way to get threshold: still good
+        % p_th_dist = prctile(p_tot,p_th);
         
         % get indices that satisfies condition
         i_signal = (1-p_tot)<=(1-p_th_dist);
@@ -549,7 +619,9 @@ while size(seed,1)
         else
             mask= Vx3>MIN;
             % do not remove what already segmented
-            mask=or(mask,cIMtmp(xinit:xend,yinit:yend,zinit:zend)>0);
+            
+            mask = SmRG_pruneMask(mask,  queue,v_init);
+            mask = or(mask,cIMtmp(xinit:xend,yinit:yend,zinit:zend)>0);
         end
         V_signal=double(mask).*Vx3;
         
