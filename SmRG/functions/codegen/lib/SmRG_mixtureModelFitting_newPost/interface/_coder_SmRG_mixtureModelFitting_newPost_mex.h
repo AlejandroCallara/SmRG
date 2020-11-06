@@ -5,7 +5,7 @@
  *
  * _coder_SmRG_mixtureModelFitting_newPost_mex.h
  *
- * Code generation for function '_coder_SmRG_mixtureModelFitting_newPost_mex'
+ * Code generation for function 'SmRG_mixtureModelFitting_newPost'
  *
  */
 
@@ -13,19 +13,26 @@
 #define _CODER_SMRG_MIXTUREMODELFITTING_NEWPOST_MEX_H
 
 /* Include files */
-#include <math.h>
-#include <stdlib.h>
-#include <string.h>
-#include "tmwtypes.h"
-#include "mex.h"
 #include "emlrt.h"
-#include "_coder_SmRG_mixtureModelFitting_newPost_api.h"
+#include "mex.h"
+#include "tmwtypes.h"
+#ifdef __cplusplus
 
-/* Function Declarations */
-extern void mexFunction(int32_T nlhs, mxArray *plhs[], int32_T nrhs, const
-  mxArray *prhs[]);
-extern emlrtCTX mexFunctionCreateRootTLS(void);
+extern "C" {
 
+#endif
+
+  /* Function Declarations */
+  void SmRG_mixtureModelFitting_newPost_mexFunction(int32_T nlhs, mxArray *plhs
+    [6], int32_T nrhs, const mxArray *prhs[6]);
+  MEXFUNCTION_LINKAGE void mexFunction(int32_T nlhs, mxArray *plhs[], int32_T
+    nrhs, const mxArray *prhs[]);
+  emlrtCTX mexFunctionCreateRootTLS(void);
+
+#ifdef __cplusplus
+
+}
+#endif
 #endif
 
 /* End of code generation (_coder_SmRG_mixtureModelFitting_newPost_mex.h) */

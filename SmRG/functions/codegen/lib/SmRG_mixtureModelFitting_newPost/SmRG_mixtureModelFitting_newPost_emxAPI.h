@@ -13,20 +13,30 @@
 #define SMRG_MIXTUREMODELFITTING_NEWPOST_EMXAPI_H
 
 /* Include files */
+#include "SmRG_mixtureModelFitting_newPost_types.h"
+#include "rtwtypes.h"
 #include <stddef.h>
 #include <stdlib.h>
-#include "rtwtypes.h"
-#include "SmRG_mixtureModelFitting_newPost_types.h"
+#ifdef __cplusplus
 
-/* Function Declarations */
-extern emxArray_real_T *emxCreateND_real_T(int numDimensions, int *size);
-extern emxArray_real_T *emxCreateWrapperND_real_T(double *data, int
-  numDimensions, int *size);
-extern emxArray_real_T *emxCreateWrapper_real_T(double *data, int rows, int cols);
-extern emxArray_real_T *emxCreate_real_T(int rows, int cols);
-extern void emxDestroyArray_real_T(emxArray_real_T *emxArray);
-extern void emxInitArray_real_T(emxArray_real_T **pEmxArray, int numDimensions);
+extern "C" {
 
+#endif
+
+  /* Function Declarations */
+  extern emxArray_real_T *emxCreateND_real_T(int numDimensions, const int *size);
+  extern emxArray_real_T *emxCreateWrapperND_real_T(double *data, int
+    numDimensions, const int *size);
+  extern emxArray_real_T *emxCreateWrapper_real_T(double *data, int rows, int
+    cols);
+  extern emxArray_real_T *emxCreate_real_T(int rows, int cols);
+  extern void emxDestroyArray_real_T(emxArray_real_T *emxArray);
+  extern void emxInitArray_real_T(emxArray_real_T **pEmxArray, int numDimensions);
+
+#ifdef __cplusplus
+
+}
+#endif
 #endif
 
 /* End of code generation (SmRG_mixtureModelFitting_newPost_emxAPI.h) */

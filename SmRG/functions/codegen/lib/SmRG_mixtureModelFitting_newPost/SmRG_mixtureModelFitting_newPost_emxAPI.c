@@ -10,18 +10,18 @@
  */
 
 /* Include files */
-#include <stdlib.h>
-#include "rt_nonfinite.h"
-#include "SmRG_mixtureModelFitting_newPost.h"
 #include "SmRG_mixtureModelFitting_newPost_emxAPI.h"
 #include "SmRG_mixtureModelFitting_newPost_emxutil.h"
+#include "SmRG_mixtureModelFitting_newPost_types.h"
+#include "rt_nonfinite.h"
+#include <stdlib.h>
 
 /* Function Definitions */
-emxArray_real_T *emxCreateND_real_T(int numDimensions, int *size)
+emxArray_real_T *emxCreateND_real_T(int numDimensions, const int *size)
 {
   emxArray_real_T *emx;
-  int numEl;
   int i;
+  int numEl;
   emxInit_real_T(&emx, numDimensions);
   numEl = 1;
   for (i = 0; i < numDimensions; i++) {
@@ -35,12 +35,12 @@ emxArray_real_T *emxCreateND_real_T(int numDimensions, int *size)
   return emx;
 }
 
-emxArray_real_T *emxCreateWrapperND_real_T(double *data, int numDimensions, int *
-  size)
+emxArray_real_T *emxCreateWrapperND_real_T(double *data, int numDimensions,
+  const int *size)
 {
   emxArray_real_T *emx;
-  int numEl;
   int i;
+  int numEl;
   emxInit_real_T(&emx, numDimensions);
   numEl = 1;
   for (i = 0; i < numDimensions; i++) {

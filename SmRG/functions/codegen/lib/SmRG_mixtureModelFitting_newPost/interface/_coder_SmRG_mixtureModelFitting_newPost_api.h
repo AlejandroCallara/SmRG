@@ -5,7 +5,7 @@
  *
  * _coder_SmRG_mixtureModelFitting_newPost_api.h
  *
- * Code generation for function '_coder_SmRG_mixtureModelFitting_newPost_api'
+ * Code generation for function 'SmRG_mixtureModelFitting_newPost'
  *
  */
 
@@ -13,12 +13,9 @@
 #define _CODER_SMRG_MIXTUREMODELFITTING_NEWPOST_API_H
 
 /* Include files */
-#include "tmwtypes.h"
-#include "mex.h"
 #include "emlrt.h"
-#include <stddef.h>
-#include <stdlib.h>
-#include "_coder_SmRG_mixtureModelFitting_newPost_api.h"
+#include "tmwtypes.h"
+#include <string.h>
 
 /* Type Definitions */
 #ifndef struct_emxArray_real_T
@@ -46,18 +43,28 @@ typedef struct emxArray_real_T emxArray_real_T;
 extern emlrtCTX emlrtRootTLSGlobal;
 extern emlrtContext emlrtContextGlobal;
 
-/* Function Declarations */
-extern void SmRG_mixtureModelFitting_newPost(emxArray_real_T *Vin, real_T
-  *K0_double, real_T *vB_double, real_T *mu_sk, real_T *rk, emxArray_real_T
-  *p_tot, emxArray_real_T *a1);
-extern void SmRG_mixtureModelFitting_newPost_api(const mxArray * const prhs[5],
-  int32_T nlhs, const mxArray *plhs[6]);
-extern void SmRG_mixtureModelFitting_newPost_atexit(void);
-extern void SmRG_mixtureModelFitting_newPost_initialize(void);
-extern void SmRG_mixtureModelFitting_newPost_terminate(void);
-extern void SmRG_mixtureModelFitting_newPost_xil_shutdown(void);
-extern void SmRG_mixtureModelFitting_newPost_xil_terminate(void);
+#ifdef __cplusplus
 
+extern "C" {
+
+#endif
+
+  /* Function Declarations */
+  void SmRG_mixtureModelFitting_newPost(emxArray_real_T *Vin, real_T *K0_double,
+    real_T *vB_double, real_T *mu_sk, real_T *rk, real_T tol, emxArray_real_T
+    *p_tot, emxArray_real_T *a1);
+  void SmRG_mixtureModelFitting_newPost_atexit(void);
+  void SmRG_mixtureModelFitting_newPost_initialize(void);
+  void SmRG_mixtureModelFitting_newPost_terminate(void);
+  void SmRG_mixtureModelFitting_newPost_xil_shutdown(void);
+  void SmRG_mixtureModelFitting_newPost_xil_terminate(void);
+  void c_SmRG_mixtureModelFitting_newP(const mxArray * const prhs[6], int32_T
+    nlhs, const mxArray *plhs[6]);
+
+#ifdef __cplusplus
+
+}
+#endif
 #endif
 
 /* End of code generation (_coder_SmRG_mixtureModelFitting_newPost_api.h) */

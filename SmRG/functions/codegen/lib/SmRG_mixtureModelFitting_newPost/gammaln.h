@@ -13,14 +13,22 @@
 #define GAMMALN_H
 
 /* Include files */
+#include "rtwtypes.h"
 #include <stddef.h>
 #include <stdlib.h>
-#include "rtwtypes.h"
-#include "SmRG_mixtureModelFitting_newPost_types.h"
+#ifdef __cplusplus
 
-/* Function Declarations */
-extern void gammaln(double *x);
+extern "C" {
 
+#endif
+
+  /* Function Declarations */
+  void gammaln(double *x);
+
+#ifdef __cplusplus
+
+}
+#endif
 #endif
 
 /* End of code generation (gammaln.h) */

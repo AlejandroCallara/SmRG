@@ -11,13 +11,22 @@
 
 #ifndef RTGETNAN_H
 #define RTGETNAN_H
-#include <stddef.h>
+
+/* Include files */
 #include "rtwtypes.h"
-#include "rt_nonfinite.h"
+#ifdef __cplusplus
 
-extern real_T rtGetNaN(void);
-extern real32_T rtGetNaNF(void);
+extern "C" {
 
+#endif
+
+  extern real_T rtGetNaN(void);
+  extern real32_T rtGetNaNF(void);
+
+#ifdef __cplusplus
+
+}
+#endif
 #endif
 
 /* End of code generation (rtGetNaN.h) */

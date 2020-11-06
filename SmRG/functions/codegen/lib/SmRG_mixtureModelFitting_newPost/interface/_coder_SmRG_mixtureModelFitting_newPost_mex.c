@@ -5,34 +5,30 @@
  *
  * _coder_SmRG_mixtureModelFitting_newPost_mex.c
  *
- * Code generation for function '_coder_SmRG_mixtureModelFitting_newPost_mex'
+ * Code generation for function 'SmRG_mixtureModelFitting_newPost'
  *
  */
 
 /* Include files */
-#include "_coder_SmRG_mixtureModelFitting_newPost_api.h"
 #include "_coder_SmRG_mixtureModelFitting_newPost_mex.h"
-
-/* Function Declarations */
-static void c_SmRG_mixtureModelFitting_newP(int32_T nlhs, mxArray *plhs[6],
-  int32_T nrhs, const mxArray *prhs[5]);
+#include "_coder_SmRG_mixtureModelFitting_newPost_api.h"
 
 /* Function Definitions */
-static void c_SmRG_mixtureModelFitting_newP(int32_T nlhs, mxArray *plhs[6],
-  int32_T nrhs, const mxArray *prhs[5])
+void SmRG_mixtureModelFitting_newPost_mexFunction(int32_T nlhs, mxArray *plhs[6],
+  int32_T nrhs, const mxArray *prhs[6])
 {
-  const mxArray *outputs[6];
-  int32_T b_nlhs;
   emlrtStack st = { NULL,              /* site */
     NULL,                              /* tls */
     NULL                               /* prev */
   };
 
+  const mxArray *outputs[6];
+  int32_T b_nlhs;
   st.tls = emlrtRootTLSGlobal;
 
   /* Check for proper number of arguments. */
-  if (nrhs != 5) {
-    emlrtErrMsgIdAndTxt(&st, "EMLRT:runTime:WrongNumberOfInputs", 5, 12, 5, 4,
+  if (nrhs != 6) {
+    emlrtErrMsgIdAndTxt(&st, "EMLRT:runTime:WrongNumberOfInputs", 5, 12, 6, 4,
                         32, "SmRG_mixtureModelFitting_newPost");
   }
 
@@ -42,7 +38,7 @@ static void c_SmRG_mixtureModelFitting_newP(int32_T nlhs, mxArray *plhs[6],
   }
 
   /* Call the function. */
-  SmRG_mixtureModelFitting_newPost_api(prhs, nlhs, outputs);
+  c_SmRG_mixtureModelFitting_newP(prhs, nlhs, outputs);
 
   /* Copy over outputs to the caller. */
   if (nlhs < 1) {
@@ -57,13 +53,13 @@ static void c_SmRG_mixtureModelFitting_newP(int32_T nlhs, mxArray *plhs[6],
 void mexFunction(int32_T nlhs, mxArray *plhs[], int32_T nrhs, const mxArray
                  *prhs[])
 {
-  mexAtExit(SmRG_mixtureModelFitting_newPost_atexit);
+  mexAtExit(&SmRG_mixtureModelFitting_newPost_atexit);
 
   /* Module initialization. */
   SmRG_mixtureModelFitting_newPost_initialize();
 
   /* Dispatch the entry-point. */
-  c_SmRG_mixtureModelFitting_newP(nlhs, plhs, nrhs, prhs);
+  SmRG_mixtureModelFitting_newPost_mexFunction(nlhs, plhs, nrhs, prhs);
 
   /* Module termination. */
   SmRG_mixtureModelFitting_newPost_terminate();

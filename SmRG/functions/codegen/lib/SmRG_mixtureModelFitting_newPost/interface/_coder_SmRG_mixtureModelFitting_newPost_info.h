@@ -11,15 +11,22 @@
 
 #ifndef _CODER_SMRG_MIXTUREMODELFITTING_NEWPOST_INFO_H
 #define _CODER_SMRG_MIXTUREMODELFITTING_NEWPOST_INFO_H
+
 /* Include files */
-#include "tmwtypes.h"
 #include "mex.h"
-#include "emlrt.h"
+#ifdef __cplusplus
 
-
-/* Function Declarations */
-extern const mxArray *emlrtMexFcnResolvedFunctionsInfo(void);
-MEXFUNCTION_LINKAGE mxArray *emlrtMexFcnProperties(void);
+extern "C" {
 
 #endif
+
+  /* Function Declarations */
+  MEXFUNCTION_LINKAGE mxArray *emlrtMexFcnProperties(void);
+
+#ifdef __cplusplus
+
+}
+#endif
+#endif
+
 /* End of code generation (_coder_SmRG_mixtureModelFitting_newPost_info.h) */

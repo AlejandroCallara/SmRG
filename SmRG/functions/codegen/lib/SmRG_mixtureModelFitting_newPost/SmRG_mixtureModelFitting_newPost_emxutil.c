@@ -10,17 +10,17 @@
  */
 
 /* Include files */
+#include "SmRG_mixtureModelFitting_newPost_emxutil.h"
+#include "SmRG_mixtureModelFitting_newPost_types.h"
+#include "rt_nonfinite.h"
 #include <stdlib.h>
 #include <string.h>
-#include "rt_nonfinite.h"
-#include "SmRG_mixtureModelFitting_newPost.h"
-#include "SmRG_mixtureModelFitting_newPost_emxutil.h"
 
 /* Function Definitions */
 void emxEnsureCapacity_int32_T(emxArray_int32_T *emxArray, int oldNumel)
 {
-  int newNumel;
   int i;
+  int newNumel;
   void *newData;
   if (oldNumel < 0) {
     oldNumel = 0;
@@ -41,7 +41,7 @@ void emxEnsureCapacity_int32_T(emxArray_int32_T *emxArray, int oldNumel)
       if (i > 1073741823) {
         i = MAX_int32_T;
       } else {
-        i <<= 1;
+        i *= 2;
       }
     }
 
@@ -61,8 +61,8 @@ void emxEnsureCapacity_int32_T(emxArray_int32_T *emxArray, int oldNumel)
 
 void emxEnsureCapacity_real_T(emxArray_real_T *emxArray, int oldNumel)
 {
-  int newNumel;
   int i;
+  int newNumel;
   void *newData;
   if (oldNumel < 0) {
     oldNumel = 0;
@@ -83,7 +83,7 @@ void emxEnsureCapacity_real_T(emxArray_real_T *emxArray, int oldNumel)
       if (i > 1073741823) {
         i = MAX_int32_T;
       } else {
-        i <<= 1;
+        i *= 2;
       }
     }
 
@@ -103,8 +103,8 @@ void emxEnsureCapacity_real_T(emxArray_real_T *emxArray, int oldNumel)
 
 void emxEnsureCapacity_uint32_T(emxArray_uint32_T *emxArray, int oldNumel)
 {
-  int newNumel;
   int i;
+  int newNumel;
   void *newData;
   if (oldNumel < 0) {
     oldNumel = 0;
@@ -125,7 +125,7 @@ void emxEnsureCapacity_uint32_T(emxArray_uint32_T *emxArray, int oldNumel)
       if (i > 1073741823) {
         i = MAX_int32_T;
       } else {
-        i <<= 1;
+        i *= 2;
       }
     }
 

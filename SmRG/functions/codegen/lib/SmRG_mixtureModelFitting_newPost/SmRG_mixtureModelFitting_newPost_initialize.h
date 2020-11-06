@@ -13,14 +13,22 @@
 #define SMRG_MIXTUREMODELFITTING_NEWPOST_INITIALIZE_H
 
 /* Include files */
+#include "rtwtypes.h"
 #include <stddef.h>
 #include <stdlib.h>
-#include "rtwtypes.h"
-#include "SmRG_mixtureModelFitting_newPost_types.h"
+#ifdef __cplusplus
 
-/* Function Declarations */
-extern void SmRG_mixtureModelFitting_newPost_initialize(void);
+extern "C" {
 
+#endif
+
+  /* Function Declarations */
+  extern void SmRG_mixtureModelFitting_newPost_initialize(void);
+
+#ifdef __cplusplus
+
+}
+#endif
 #endif
 
 /* End of code generation (SmRG_mixtureModelFitting_newPost_initialize.h) */

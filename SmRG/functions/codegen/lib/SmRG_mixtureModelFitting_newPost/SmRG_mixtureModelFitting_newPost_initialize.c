@@ -10,14 +10,15 @@
  */
 
 /* Include files */
-#include "rt_nonfinite.h"
-#include "SmRG_mixtureModelFitting_newPost.h"
 #include "SmRG_mixtureModelFitting_newPost_initialize.h"
+#include "SmRG_mixtureModelFitting_newPost_data.h"
+#include "rt_nonfinite.h"
 
 /* Function Definitions */
 void SmRG_mixtureModelFitting_newPost_initialize(void)
 {
-  rt_InitInfAndNaN(8U);
+  rt_InitInfAndNaN();
+  isInitialized_SmRG_mixtureModelFitting_newPost = true;
 }
 
 /* End of code generation (SmRG_mixtureModelFitting_newPost_initialize.c) */

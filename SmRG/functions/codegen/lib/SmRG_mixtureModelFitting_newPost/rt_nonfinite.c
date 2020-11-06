@@ -14,9 +14,10 @@
  *      MATLAB for code generation function to initialize non-finites,
  *      (Inf, NaN and -Inf).
  */
+/* Include files */
 #include "rt_nonfinite.h"
-#include "rtGetNaN.h"
 #include "rtGetInf.h"
+#include "rtGetNaN.h"
 
 real_T rtInf;
 real_T rtMinusInf;
@@ -30,9 +31,8 @@ real32_T rtNaNF;
  * Initialize the rtInf, rtMinusInf, and rtNaN needed by the
  * generated code. NaN is initialized as non-signaling. Assumes IEEE.
  */
-void rt_InitInfAndNaN(size_t realSize)
+void rt_InitInfAndNaN()
 {
-  (void)realSize;
   rtNaN = rtGetNaN();
   rtNaNF = rtGetNaNF();
   rtInf = rtGetInf();
@@ -47,7 +47,7 @@ void rt_InitInfAndNaN(size_t realSize)
  */
 boolean_T rtIsInf(real_T value)
 {
-  return ((value==rtInf || value==rtMinusInf) ? 1U : 0U);
+  return ((value==rtInf || value==rtMinusInf) ? true : false);
 }
 
 /* Function: rtIsInfF =================================================
@@ -56,7 +56,7 @@ boolean_T rtIsInf(real_T value)
  */
 boolean_T rtIsInfF(real32_T value)
 {
-  return(((value)==rtInfF || (value)==rtMinusInfF) ? 1U : 0U);
+  return ((value==rtInfF || value==rtMinusInfF) ? true : false);
 }
 
 /* Function: rtIsNaN ==================================================
@@ -65,7 +65,7 @@ boolean_T rtIsInfF(real32_T value)
  */
 boolean_T rtIsNaN(real_T value)
 {
-  return (value!=value)? 1U:0U;
+  return ((value!=value) ? true : false);
 }
 
 /* Function: rtIsNaNF =================================================
@@ -74,7 +74,7 @@ boolean_T rtIsNaN(real_T value)
  */
 boolean_T rtIsNaNF(real32_T value)
 {
-  return (value!=value)? 1U:0U;
+  return ((value!=value) ? true : false);
 }
 
 /* End of code generation (rt_nonfinite.c) */

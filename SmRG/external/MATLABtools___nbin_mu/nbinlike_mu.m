@@ -22,18 +22,18 @@ function [logL, avar] = nbinlike_mu(params, data)
 %|
 %|====================================================================================
 
-if nargin < 2, 
-    error(message('stats:nbinlike:TooFewInputs')); 
-end
-
+% if nargin < 2, 
+%     error(message('stats:nbinlike:TooFewInputs')); 
+% end
+% 
 [n, m] = size(data);
-if min(n,m) > 1
-    error(message('stats:nbinlike:InvalidData'));
-end
-
-if nargout == 2 & max(m,n) == 1
-    error(message('stats:nbinlike:NotEnoughData'));
-end
+% if min(n,m) > 1
+%     error(message('stats:nbinlike:InvalidData'));
+% end
+% 
+% if nargout == 2 & max(m,n) == 1
+%     error(message('stats:nbinlike:NotEnoughData'));
+% end
 
 if n == 1
    data = data';

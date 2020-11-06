@@ -210,7 +210,7 @@ p    = round(sum(dip<boot_dip)/nboot,4);
 mask = false(size(Vx3));
 
 % if bimodal OTSU
-if p<=0.05
+if p<=0.01
     if max(Vx3(:))<background
         disp('Only background -> skipping segmentation'), disp('');
         
@@ -482,7 +482,7 @@ while size(seed,1)
     p    = round(sum(dip<boot_dip)/nboot,4);
     
     %% check on bimodality
-    if p<=0.05
+    if p<=0.01
         if max(Vx3(:))<background
             disp('Only background -> skipping segmentation'), disp('');
             
@@ -602,7 +602,7 @@ while size(seed,1)
             p_th = p_th-0.5;
         end
         p_th_dist = p_dist_soglie(1);
-        %  p_th_dist = 1;
+%         p_th_dist = 1;
         
         % old way to get threshold: still good
         % p_th_dist = prctile(p_tot,p_th);
